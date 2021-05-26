@@ -3,24 +3,24 @@ defmodule DockapseTest do
   doctest Dockapse
 
   defp cleanup(container_id: container_id) do
-    System.cmd("sudo", ["docker", "rm", "#{container_id}"])
+    System.cmd("docker", ["rm", "#{container_id}"])
   end
 
   defp cleanup(image_id: image_id) do
-    System.cmd("sudo", ["docker", "rmi", "#{image_id}"])
+    System.cmd("docker", ["rmi", "#{image_id}"])
   end
 
   setup do
     try do
-      System.cmd("sudo", ["docker", "--help"])
-      {image_id, _} = System.cmd("sudo", ["docker", "pull", "alpine"])
-      {container_id, _} = System.cmd("sudo", ["docker", "create", "alpine"])
+      System.cmd("docker", ["--help"])
+      {image_id, _} = System.cmd("docker", ["pull", "alpine"])
+      {container_id, _} = System.cmd("docker", ["create", "alpine"])
 
       {
         :ok,
         %{
-          container_id: String.strip(container_id),
-          image_id: String.strip(image_id)
+          container_id: String.trim(container_id),
+          image_id: String.trim(image_id)
         }
       }
     rescue
@@ -40,5 +40,18 @@ defmodule DockapseTest do
     cleanup(container_id: container_id)
   end
 
-  # Cleanup
+  test "cmd (wildcard)" do
+    {version_info, 0} = Dockapse.cmd("--version")
+    {run_help_info, 0} = Dockapse.cmd("run", ["--help"])
+    assert version_info =~ "Docker version"
+    assert run_help_info =~ "Run a command in a new container"
+  end
+
+  test "run" do
+    {run_help_info, 0} = Dockapse.run(["--help"])
+    assert run_help_info =~ "Run a command in a new container"
+
+    {run_output, 0} = Dockapse.run(["hello-world"])
+    assert run_output =~ "Hello from Docker"
+  end
 end

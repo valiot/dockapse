@@ -16,3 +16,6 @@ def deps do
   [{:dockapse, "~> 0.1.0"}]
 end
 ```
+## Testing
+
+Since Nerves runs by default as the `root` user, in order to run the tests (at host), docker should be configured to run with a non-root user as described [here](https://docs.docker.com/engine/install/linux-postinstall/)
