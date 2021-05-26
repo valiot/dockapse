@@ -5,15 +5,17 @@ defmodule DockapseTest do
   defp cleanup(container_id: container_id) do
     System.cmd("sudo", ["docker", "rm", "#{container_id}"])
   end
+
   defp cleanup(image_id: image_id) do
     System.cmd("sudo", ["docker", "rmi", "#{image_id}"])
   end
 
   setup do
     try do
-      System.cmd("sudo",["docker", "--help"])
+      System.cmd("sudo", ["docker", "--help"])
       {image_id, _} = System.cmd("sudo", ["docker", "pull", "alpine"])
       {container_id, _} = System.cmd("sudo", ["docker", "create", "alpine"])
+
       {
         :ok,
         %{
@@ -23,16 +25,17 @@ defmodule DockapseTest do
       }
     rescue
       ErlangError ->
-        IO.puts """
+        IO.puts("""
           Docker is not installed on your machine
-        """
+        """)
+
         exit(1)
     end
   end
 
-  test "ps",%{container_id: container_id} do
-    IO.inspect Dockapse.ps(false)
-    IO.inspect Dockapse.ps(true)
+  test "ps", %{container_id: container_id} do
+    IO.inspect(Dockapse.ps(false))
+    IO.inspect(Dockapse.ps(true))
 
     cleanup(container_id: container_id)
   end

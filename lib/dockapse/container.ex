@@ -2,25 +2,27 @@ defmodule Dockapse.Container do
   alias Dockapse.{Container, Image}
 
   defstruct id: nil,
-    image_name: nil,
-    command: nil,
-    created_at: nil,
-    status: nil,
-    size: nil
+            image_name: nil,
+            command: nil,
+            created_at: nil,
+            status: nil,
+            size: nil
 
   @format """
   "{{.ID}}, {{.Image}}, {{.Command}}, {{.CreatedAt}}, {{.Status}}, {{.Size}}"
   """
 
   def create(image_or_id, stdio \\ false)
+
   def create(%Image{id: image_id}, stdio) do
-    case docker ["container", "create", image_id], stdio do
+    case docker(["container", "create", image_id], stdio) do
       {cid, 0} -> {:ok, String.slice(cid, 0..11)}
       {error, 1} -> {:error, error}
     end
   end
+
   def create(image_id, stdio) when is_binary(image_id) do
-    case docker ["container", "create", image_id], stdio do
+    case docker(["container", "create", image_id], stdio) do
       {cid, 0} -> {:ok, cid}
       {error, 1} -> {:error, error}
     end
@@ -28,8 +30,7 @@ defmodule Dockapse.Container do
 
   def get(container_id) do
     with {:ok, containers} <- list_containers(:all),
-      nil <- Enum.find(containers, & &1.id == container_id)
-    do
+         nil <- Enum.find(containers, &(&1.id == container_id)) do
       {:error, "Cannot find container with id: #{container_id}"}
     else
       {:error, error} -> {:error, error}
@@ -38,14 +39,16 @@ defmodule Dockapse.Container do
   end
 
   def list_containers(active_or_all_or_image, stdio \\ false)
+
   def list_containers(:all, stdio) do
-    case docker ["ps", "--all", "--format", @format], stdio do
+    case docker(["ps", "--all", "--format", @format], stdio) do
       {stringified_list, 0} -> {:ok, parse_stringified_list(stringified_list)}
       {error, 1} -> {:error, error}
     end
   end
+
   def list_containers(:active, stdio) do
-    case docker ["ps", "--format", @format], stdio do
+    case docker(["ps", "--format", @format], stdio) do
       {stringified_list, 0} -> {:ok, parse_stringified_list(stringified_list)}
       {error, 1} -> {:error, error}
     end
@@ -53,8 +56,7 @@ defmodule Dockapse.Container do
 
   def list_containers(%Image{repository: name}, _stdio) do
     with {:ok, containers} <- list_containers(:all),
-      containers <- Enum.filter(containers, & &1.image_name == name)
-    do
+         containers <- Enum.filter(containers, &(&1.image_name == name)) do
       {:ok, containers}
     else
       {:error, error} -> {:error, error}
@@ -62,7 +64,7 @@ defmodule Dockapse.Container do
   end
 
   def remove(container_id, stdio \\ false) do
-    case docker ["container", "rm", "--force", container_id], stdio do
+    case docker(["container", "rm", "--force", container_id], stdio) do
       {message, 0} -> {:ok, message}
       {error, 1} -> {:error, error}
     end
@@ -76,7 +78,7 @@ defmodule Dockapse.Container do
   end
 
   defp docker(args, stdio) do
-    opts = stdio && [into: IO.stream(:stdio, :line)] || []
+    opts = (stdio && [into: IO.stream(:stdio, :line)]) || []
     MuonTrap.cmd("docker", args, opts)
   end
 
@@ -90,10 +92,11 @@ defmodule Dockapse.Container do
   defp parse_to_struct(formatted_container) do
     keys = [:id, :image_name, :command, :created_at, :status, :size]
 
-    params = formatted_container
+    params =
+      formatted_container
       |> String.trim("\"")
       |> String.split(", ")
-      |> Enum.reduce({[], keys}, fn(value, {keyword, rem_keys}) ->
+      |> Enum.reduce({[], keys}, fn value, {keyword, rem_keys} ->
         value = String.trim(value, "\"")
         key = Enum.at(rem_keys, 0)
         rem_keys = List.delete_at(rem_keys, 0)

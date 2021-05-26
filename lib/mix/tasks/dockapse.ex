@@ -14,8 +14,7 @@ defmodule Mix.Tasks.Dockapse.Build do
   Delegates the arguments to Dockapse and prints the output
   """
   def run(argv) do
-    {[f: dockerfile, t: tag], _, _} =
-      OptionParser.parse(argv, switches: @switches)
+    {[f: dockerfile, t: tag], _, _} = OptionParser.parse(argv, switches: @switches)
 
     Dockapse.build(dockerfile, tag, true)
   end
@@ -61,8 +60,7 @@ defmodule Mix.Tasks.Dockapse.Ps do
   Delegates the arguments to Dockapse and prints the output
   """
   def run(argv) do
-    {opts, _, _} =
-      OptionParser.parse(argv, switches: @switches)
+    {opts, _, _} = OptionParser.parse(argv, switches: @switches)
 
     Dockapse.ps(opts[:all], true)
   end
@@ -102,8 +100,7 @@ defmodule Mix.Tasks.Dockapse.Create do
   Delegates the arguments to Dockapse and prints the output
   """
   def run(argv) do
-    {[image: image] = opts, _, _} =
-      OptionParser.parse(argv, switches: @switches)
+    {[image: image] = opts, _, _} = OptionParser.parse(argv, switches: @switches)
 
     case opts[:name] do
       nil -> Dockapse.create(image, nil, true)
@@ -128,8 +125,7 @@ defmodule Mix.Tasks.Dockapse.Rm do
   Delegates the arguments to Dockapse and prints the output
   """
   def run(argv) do
-    {[container: cid], _, _} =
-      OptionParser.parse(argv, switches: @switches)
+    {[container: cid], _, _} = OptionParser.parse(argv, switches: @switches)
 
     Dockapse.rm(cid, true)
   end
@@ -151,8 +147,7 @@ defmodule Mix.Tasks.Dockapse.Rmi do
   Delegates the arguments to Dockapse and prints the output
   """
   def run(argv) do
-    {[image: image_id], _, _} =
-      OptionParser.parse(argv, switches: @switches)
+    {[image: image_id], _, _} = OptionParser.parse(argv, switches: @switches)
 
     Dockapse.rmi(image_id, true)
   end
@@ -174,8 +169,7 @@ defmodule Mix.Tasks.Dockapse.Tag do
   Delegates the arguments to Dockapse and prints the output
   """
   def run(argv) do
-    {[image: image, tag: tag], _, _} =
-      OptionParser.parse(argv, switches: @switches)
+    {[image: image, tag: tag], _, _} = OptionParser.parse(argv, switches: @switches)
 
     Dockapse.tag(image, tag, true)
   end
@@ -197,8 +191,7 @@ defmodule Mix.Tasks.Dockapse.Push do
   Delegates the arguments to Dockapse and prints the output
   """
   def run(argv) do
-    {[image: image], _, _} =
-      OptionParser.parse(argv, switches: @switches)
+    {[image: image], _, _} = OptionParser.parse(argv, switches: @switches)
 
     Dockapse.push(image, true)
   end
