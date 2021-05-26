@@ -8,6 +8,13 @@ defmodule Dockapse.Engine do
   defstruct engine_args: nil,
             port: nil
 
+  # For tests only
+  if Mix.env() == :test do
+    def start(engine_opts \\ from_env(), otp_opts \\ [name: __MODULE__]) do
+      GenServer.start(__MODULE__, engine_opts, otp_opts)
+    end
+  end
+
   def start_link(engine_opts \\ from_env(), otp_opts \\ [name: __MODULE__]) do
     GenServer.start_link(__MODULE__, engine_opts, otp_opts)
   end
@@ -18,15 +25,15 @@ defmodule Dockapse.Engine do
   end
 
   def handle_continue(required_dir, %{engine_args: engine_args} = state) do
-    with  :ok <- set_required_dir(required_dir),
-          args <- build_dockerd_args(engine_args),
-          port_opt <- [stderr_to_stdout: true, log_output: :debug, log_prefix: "(#{__MODULE__}) "],
-          exec = get_executable(),
-          port = MuonTrap.Daemon.start_link(exec, args, port_opt) do
+    with :ok <- set_required_dir(required_dir),
+         args <- build_dockerd_args(engine_args),
+         port_opt <- [stderr_to_stdout: true, log_output: :debug, log_prefix: "(#{__MODULE__}) "],
+         exec = get_executable(),
+         port = MuonTrap.Daemon.start_link(exec, args, port_opt) do
       {:noreply, %{state | port: port}}
     else
-      error -> 
-        Logger.warn("(#{__MODULE__}) Unable to start the Engine: #{inspect(error)}.")    
+      error ->
+        Logger.warn("(#{__MODULE__}) Unable to start the Engine: #{inspect(error)}.")
         {:noreply, state}
     end
   end
@@ -65,6 +72,7 @@ defmodule Dockapse.Engine do
   end
 
   defp create_required_dir(true = _dir_exist, _directory), do: :ok
+
   defp create_required_dir(_dir_does_not_exist, directory) do
     # retrying delay
     Process.sleep(1000)
@@ -72,12 +80,11 @@ defmodule Dockapse.Engine do
     File.mkdir_p(directory)
     set_required_dir(directory)
   end
-  
+
   defp build_dockerd_args(engine_args) do
-    Enum.reduce(engine_args, [], 
-      fn 
-        {option_name, ""}, acc -> acc ++ ["#{option_name}"]
-        {option_name, value}, acc ->  acc ++ ["#{option_name}=#{value}"]
-      end)
+    Enum.reduce(engine_args, [], fn
+      {option_name, ""}, acc -> acc ++ ["#{option_name}"]
+      {option_name, value}, acc -> acc ++ ["#{option_name}=#{value}"]
+    end)
   end
 end
