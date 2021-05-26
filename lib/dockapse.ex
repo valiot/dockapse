@@ -1,5 +1,4 @@
 defmodule Dockapse do
-  require Dockapse.SystemInfo
 
   def build(dockerfile, tag, stdio \\ false) do
     docker ["build", "-f", dockerfile, "-t", tag, "."], stdio
@@ -48,13 +47,6 @@ defmodule Dockapse do
   defp docker(args, stdio) do
     opts = stdio && [into: IO.stream(:stdio, :line)] || []
 
-    try do
-      case Dockapse.SystemInfo.get_system_type() do
-        :mac -> System.cmd("docker", args, opts)
-        _ -> System.cmd("sudo", ["docker"] ++ args, opts)
-      end
-    rescue
-      e in ErlangError -> {e, 1}
-    end
+    MuonTrap.cmd("docker", args, opts)
   end
 end

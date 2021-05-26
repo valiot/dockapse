@@ -1,5 +1,5 @@
 defmodule Dockapse.Container do
-  alias Dockapse.{Container, Image, SystemInfo}
+  alias Dockapse.{Container, Image}
 
   defstruct id: nil,
     image_name: nil,
@@ -77,15 +77,7 @@ defmodule Dockapse.Container do
 
   defp docker(args, stdio) do
     opts = stdio && [into: IO.stream(:stdio, :line)] || []
-
-    try do
-      case SystemInfo.get_system_type() do
-        :mac -> System.cmd("docker", args, opts)
-        _ -> System.cmd("sudo", ["docker"] ++ args, opts)
-      end
-    rescue
-      e in ErlangError -> {e, 1}
-    end
+    MuonTrap.cmd("docker", args, opts)
   end
 
   defp parse_stringified_list(stringified_list) do
