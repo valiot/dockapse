@@ -33,7 +33,7 @@ defmodule Dockapse.Engine do
       {:noreply, %{state | port: port}}
     else
       error ->
-        Logger.warn("(#{__MODULE__}) Unable to start the Engine: #{inspect(error)}.")
+        Logger.warning("(#{__MODULE__}) Unable to start the Engine: #{inspect(error)}.")
         {:noreply, state}
     end
   end
@@ -44,7 +44,7 @@ defmodule Dockapse.Engine do
   end
 
   def handle_info({_port, {:exit_status, code}}, state) do
-    Logger.warn("(#{__MODULE__}) Error code: #{inspect(code)}.")
+    Logger.warning("(#{__MODULE__}) Error code: #{inspect(code)}.")
     # retrying delay
     Process.sleep(6000)
     {:stop, :restart, state}
